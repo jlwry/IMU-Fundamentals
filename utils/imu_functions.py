@@ -1,10 +1,9 @@
 from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
 from biomechzoo.biomech_ops.filter_line import filter_line
-import importlib
 from scipy.signal import medfilt
 import matplotlib.pyplot as plt
-plt.ioff()
 import numpy as np
+import matplotlib
 import imufusion
 import sys
 
@@ -101,9 +100,10 @@ def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro'):
 
 def acc_orient(data: dict):
 
-    g = 9.81
+    """ Determines orientation of the sensor
+    using only accelerometer data"""
 
-    # TODO: should I use a fixed g or should I take the mean of the signal (it's been around 9.4...) or should I just use the normalized 0
+    g = 9.81
 
     Angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
     Angle_Y = np.degrees(np.arcsin(data['Acc_X']['line'] / g))
@@ -252,6 +252,34 @@ def calibrate(dynamic: dict, static: dict, sensor_type='gyro'):
         calibrated_data[ch] = {'line': dynamic[ch]['line'] - bias[ch]}
 
     return calibrated_data
+
+
+def visualize(data_path: str, visualizer_path: str):
+    """ Uses an open source IMU data visualizer:
+    https://github.com/jlwry/imu-visualization
+
+    data_path = path to data you wish to visualize (or list of paths)
+    visualizer_path = path to visualization repo
+    """
+
+    import sys
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    original_backend = matplotlib.get_backend()
+    matplotlib.use('TkAgg')  # Changed from 'notebook' - animations need TkAgg
+
+    sys.path.append(visualizer_path)
+    from vis_3D_rot_scikit_V4 import main
+
+    try:
+        csv_files = [data_path] if isinstance(data_path, str) else data_path
+        main(csv_files)
+    except KeyboardInterrupt:
+        print("Animation stopped")
+    finally:
+        plt.close('all')
+        matplotlib.use(original_backend)
 
 if __name__ == '__main__':
     data_gyr = csv2zoo_data('data/overnight.csv')
