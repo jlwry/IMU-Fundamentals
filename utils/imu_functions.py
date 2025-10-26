@@ -1,21 +1,8 @@
-from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
 from biomechzoo.biomech_ops.filter_line import filter_line
 from scipy.signal import medfilt
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib
 import imufusion
-import sys
-
-# Functions included:
-# reload
-# filter_data
-# zero_mean
-# integrate
-# acc_orient
-# magdwick_filter
-# plot_xyz
-# calibrate
 
 def filter_data(data : dict, cutoff: int, frequency: int, sensor_type='gyro'):
 
