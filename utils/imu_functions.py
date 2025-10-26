@@ -280,12 +280,3 @@ def visualize(data_path: str, visualizer_path: str):
     finally:
         plt.close('all')
         matplotlib.use(original_backend)
-
-if __name__ == '__main__':
-    data_gyr = csv2zoo_data('data/overnight.csv')
-    filtered_gyro_data = filter_data(data_gyr, cutoff = 1, frequency = 30, sensor_type ='gyro')
-    plot_xyz(filtered_gyro_data, div_time = 108000, tlabel = '(hours)', ylabel='Orientation', sensor_type='gyro')
-
-    data_acc = csv2zoo_data('data/still_1min.csv')
-    filtered_acc_data = filter_data(data_acc, cutoff = 1, frequency = 120, sensor_type ='accel')
-    plot_xyz(filtered_acc_data, div_time = 120, tlabel = '(seconds)', ylabel='Acceleration (g)', sensor_type='accel')
