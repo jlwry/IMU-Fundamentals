@@ -1,11 +1,12 @@
 from biomechzoo.biomech_ops.filter_line import filter_line
+from matplotlib.lines import lineStyles
 from scipy.signal import medfilt
 import matplotlib.pyplot as plt
 import numpy as np
 import imufusion
 import sys
 
-def filter_data(data : dict, cutoff: int, frequency: int, sensor_type='gyro'):
+def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type='gyro'):
 
     """Filters data using median and low pass filters
     - data = dictionary containing x, y, z, sensor data
@@ -29,7 +30,7 @@ def filter_data(data : dict, cutoff: int, frequency: int, sensor_type='gyro'):
         'order': 4,
         'cutoff': cutoff,
         'btype': 'low',
-        'fs': frequency
+        'fs': sample_frequency
     }
 
     filtered_data = {}
@@ -94,7 +95,7 @@ def acc_orient(data: dict):
     g = 9.81
 
     Angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
-    Angle_Y = np.degrees(np.arcsin(data['Acc_X']['line'] / g))
+    Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
     Angle_Z = np.zeros(len(Angle_X))
 
     Angles = {
@@ -105,46 +106,59 @@ def acc_orient(data: dict):
 
     return Angles
 
-def plot_xyz(data: dict, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro'):
+def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro'):
     """
     Makes a figure with three subplots (X, Y, Z) for a given sensor type.
-    - data: dict with keys like 'Gyr_X', 'Acc_Y', etc.
+    - data: dict or list of dicts with keys like 'Gyr_X', 'Acc_Y', etc.
     - div_time: int to convert frames into time
     - tlabel: str, label for time axis
     - ylabel: str, label for variable plotted
-    - sensor_type: 'gyro', 'accel', or 'mag'
+    - sensor_type: 'gyro', 'accel', 'mag', 'angles', or 'results'
     """
 
     sensor_map = {
         'gyro': 'Gyr',
         'accel': 'Acc',
         'mag': 'Mag',
-        'angles': 'Angles'
+        'angles': 'Angles',
+        'results': 'Euler'
     }
 
-    if sensor_type not in sensor_map:
-        raise ValueError("sensor_type must be 'gyro', 'accel', or 'mag'")
+    if isinstance(data, dict):
+        data = [data]
 
-    prefix = sensor_map[sensor_type]
+    if isinstance(sensor_type, str):
+        sensor_type = [sensor_type]
 
-    time = np.arange(len(data[f'{prefix}_X']['line'])) / div_time
+    prefixes = [sensor_map[s] for s in sensor_type]
+
+    time = np.arange(len(data[0][f'{prefixes[0]}_X']['line'])) / div_time
 
     fig, axs = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
 
-    axs[0].plot(time, data[f'{prefix}_X']['line'], color="red", linewidth=2)
+    axs[0].plot(time, data[0][f'{prefixes[0]}_X']['line'], color="red", linewidth=2, label = sensor_map[sensor_type[0]])
+    axs[1].plot(time, data[0][f'{prefixes[0]}_Y']['line'], color="green", linewidth=2, label = sensor_map[sensor_type[0]])
+    axs[2].plot(time, data[0][f'{prefixes[0]}_Z']['line'], color="blue", linewidth=2, label = sensor_map[sensor_type[0]])
+
+    if len(data) == 2:
+        axs[0].plot(time, data[1][f'{prefixes[1]}_X']['line'], color="red", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
+        axs[1].plot(time, data[1][f'{prefixes[1]}_Y']['line'], color="green", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
+        axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
+
     axs[0].set_ylabel(f'X_{ylabel}', fontsize=12)
-    axs[0].grid(True, linestyle='--', alpha=0.4)
-
-    axs[1].plot(time, data[f'{prefix}_Y']['line'], color="green", linewidth=2)
     axs[1].set_ylabel(f'Y_{ylabel}', fontsize=12)
-    axs[1].grid(True, linestyle='--', alpha=0.4)
-
-    axs[2].plot(time, data[f'{prefix}_Z']['line'], color="blue", linewidth=2)
     axs[2].set_ylabel(f'Z_{ylabel}', fontsize=12)
     axs[2].set_xlabel(f'Time ({tlabel})', fontsize=12)
-    axs[2].grid(True, linestyle='--', alpha=0.4)
 
-    fig.suptitle(f'{sensor_type.capitalize()} Data', fontsize=14, y=0.95)
+    for ax in axs:
+        ax.grid(True, linestyle='--', alpha=0.4)
+        ax.legend()
+
+    if len(sensor_type) == 1:
+        fig.suptitle(f'{sensor_type[0].capitalize()} Data', fontsize=14, y=0.95)
+    else:
+        fig.suptitle(f'{sensor_type[0].capitalize()} vs {sensor_type[1].capitalize()} Data', fontsize=14, y=0.95)
+
     plt.tight_layout()
     plt.show()
 
@@ -223,7 +237,7 @@ def simple_madgwick_filter(csv: str, show_plot=True):
         ahrs.update_no_magnetometer(gyroscope[index], accelerometer[index], 1 / 120)
         euler[index] = ahrs.quaternion.to_euler()
 
-    if show_plot == True:
+    if show_plot:
 
         # Plot sensor data
         _, axes = plt.subplots(nrows=3, figsize=(8, 6), sharex=True)
@@ -254,7 +268,7 @@ def simple_madgwick_filter(csv: str, show_plot=True):
         axes[2].grid()
         axes[2].legend()
 
-    elif show_plot == False:
+    else:
         pass
 
     roll_hind = euler[:, 0]
@@ -273,7 +287,7 @@ def advanced_madgwick(csv:str, show_plot=True):
     Madgwick filter found here:
     https://github.com/xioTechnologies/Fusion
 
-    ** note: the advanced madgwick filter impliments mag data"""
+    ** note: the advanced Madgwick filter implements mag data"""
 
     data = np.genfromtxt(csv, delimiter=",", skip_header=1)
 
@@ -343,7 +357,7 @@ def advanced_madgwick(csv:str, show_plot=True):
     if show_plot:
 
         # Plot Euler angles
-        figure, axes = plt.subplots(nrows=11, sharex=True, gridspec_kw={"height_ratios": [6, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1]})
+        figure, axes = plt.subplots(nrows=11, sharex=True,  figsize=(12, 16), gridspec_kw={"height_ratios": [6, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1]})
 
         figure.suptitle("Euler angles, internal states, and flags")
 

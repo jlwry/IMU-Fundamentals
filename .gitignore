@@ -183,3 +183,4 @@ cython_debug/
 .idea/misc.xml
 .idea/IMU-Fundamentals.iml
 .idea/misc.xml
+.idea/vcs.xml
