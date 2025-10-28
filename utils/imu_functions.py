@@ -95,8 +95,7 @@ def acc_orient(data: dict):
     g = 9.81
 
     Angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
-    # Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
-    Angle_Y = np.degrees(np.arcsin(np.clip(data['Acc_X']['line'] / g, -1.0, 1.0)))
+    Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
     Angle_Z = np.zeros(len(Angle_X))
 
     Angles = {
@@ -107,14 +106,15 @@ def acc_orient(data: dict):
 
     return Angles
 
-def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro'):
+def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro', label = 'data'):
     """
     Makes a figure with three subplots (X, Y, Z) for a given sensor type.
     - data: dict or list of dicts with keys like 'Gyr_X', 'Acc_Y', etc.
     - div_time: int to convert frames into time
     - tlabel: str, label for time axis
     - ylabel: str, label for variable plotted
-    - sensor_type: 'gyro', 'accel', 'mag', 'angles', or 'results'
+    - sensor_type: str 'gyro', 'accel', 'mag', 'angles', or 'results'
+    - label: str, label for the data lines
     """
 
     sensor_map = {
@@ -131,20 +131,23 @@ def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro'):
     if isinstance(sensor_type, str):
         sensor_type = [sensor_type]
 
+    if isinstance(label, str):
+        label = [label]
+
     prefixes = [sensor_map[s] for s in sensor_type]
 
     time = np.arange(len(data[0][f'{prefixes[0]}_X']['line'])) / div_time
 
     fig, axs = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
 
-    axs[0].plot(time, data[0][f'{prefixes[0]}_X']['line'], color="red", linewidth=2, label = sensor_map[sensor_type[0]])
-    axs[1].plot(time, data[0][f'{prefixes[0]}_Y']['line'], color="green", linewidth=2, label = sensor_map[sensor_type[0]])
-    axs[2].plot(time, data[0][f'{prefixes[0]}_Z']['line'], color="blue", linewidth=2, label = sensor_map[sensor_type[0]])
+    axs[0].plot(time, data[0][f'{prefixes[0]}_X']['line'], color="red", linewidth=2, label = label[0])
+    axs[1].plot(time, data[0][f'{prefixes[0]}_Y']['line'], color="green", linewidth=2, label = label[0])
+    axs[2].plot(time, data[0][f'{prefixes[0]}_Z']['line'], color="blue", linewidth=2, label = label[0])
 
     if len(data) == 2:
-        axs[0].plot(time, data[1][f'{prefixes[1]}_X']['line'], color="red", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
-        axs[1].plot(time, data[1][f'{prefixes[1]}_Y']['line'], color="green", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
-        axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label = sensor_map[sensor_type[1]])
+        axs[0].plot(time, data[1][f'{prefixes[1]}_X']['line'], color="red", linestyle='--', linewidth=2, label = label[1])
+        axs[1].plot(time, data[1][f'{prefixes[1]}_Y']['line'], color="green", linestyle='--', linewidth=2, label =label[1])
+        axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label = label[1])
 
     axs[0].set_ylabel(f'X_{ylabel}', fontsize=12)
     axs[1].set_ylabel(f'Y_{ylabel}', fontsize=12)
@@ -155,10 +158,10 @@ def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro'):
         ax.grid(True, linestyle='--', alpha=0.4)
         ax.legend()
 
-    if len(sensor_type) == 1:
-        fig.suptitle(f'{sensor_type[0].capitalize()} Data', fontsize=14, y=0.95)
-    else:
-        fig.suptitle(f'{sensor_type[0].capitalize()} vs {sensor_type[1].capitalize()} Data', fontsize=14, y=0.95)
+    # if len(sensor_type) == 1:
+    #     fig.suptitle(f'{sensor_type[0].capitalize()} Data', fontsize=14, y=0.95)
+    # else:
+    #     fig.suptitle(f'{sensor_type[0].capitalize()} vs {sensor_type[1].capitalize()} Data', fontsize=14, y=0.95)
 
     plt.tight_layout()
     plt.show()
