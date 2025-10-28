@@ -1,5 +1,5 @@
 from biomechzoo.biomech_ops.filter_line import filter_line
-from matplotlib.lines import lineStyles
+from scipy.spatial.transform import Rotation as R
 from scipy.signal import medfilt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -95,7 +95,8 @@ def acc_orient(data: dict):
     g = 9.81
 
     Angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
-    Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
+    # Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
+    Angle_Y = np.degrees(np.arcsin(np.clip(data['Acc_X']['line'] / g, -1.0, 1.0)))
     Angle_Z = np.zeros(len(Angle_X))
 
     Angles = {
@@ -216,6 +217,27 @@ def visualize(data_path: str, visualizer_path: str):
     finally:
         plt.close('all')
         matplotlib.use(original_backend)
+
+
+def quat_to_euler(data:dict):
+
+    keys = ['Quat_W', 'Quat_X', 'Quat_Y', 'Quat_Z']
+
+    quats = np.column_stack([
+        data['Quat_W']['line'],
+        data['Quat_X']['line'],
+        data['Quat_Y']['line'],
+        data['Quat_Z']['line']
+    ])
+
+    r = R.from_quat(quats[:, [1, 2, 3, 0]])
+    euler = r.as_euler('zyx', degrees=True)
+
+    return {
+        'Euler_X': {'line': euler[:, 0]},
+        'Euler_Y': {'line': euler[:, 1]},
+        'Euler_Z': {'line': euler[:, 2]}
+    }
 
 def simple_madgwick_filter(csv: str, show_plot=True):
 
