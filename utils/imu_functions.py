@@ -1,5 +1,4 @@
 from biomechzoo.biomech_ops.filter_line import filter_line
-from scipy.spatial.transform import Rotation as R
 from scipy.signal import medfilt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,12 +46,12 @@ def zero_mean(data:dict) -> dict:
     """Removes bias from data
     - data = dictionary containing x, y, z, sensor data"""
 
-    zero_mean = {}
+    zero_mean_data = {}
     for ch in data:
         signal = data[ch]['line']
         zero_mean_data = signal - np.mean(signal)
-        zero_mean[ch] = {'line': zero_mean_data}
-    return zero_mean
+        zero_mean_data[ch] = {'line': zero_mean_data}
+    return zero_mean_data
 
 def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro') -> dict:
 
@@ -94,19 +93,19 @@ def acc_orient(data: dict) -> dict:
 
     g = 9.81
 
-    Angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
-    Angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
-    Angle_Z = np.zeros(len(Angle_X))
+    angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
+    angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
+    angle_Z = np.zeros(len(angle_X))
 
-    Angles = {
-        'Angles_X': {'line': Angle_X},
-        'Angles_Y': {'line': Angle_Y},
-        'Angles_Z': {'line': Angle_Z}
+    angles = {
+        'Angles_X': {'line': angle_X},
+        'Angles_Y': {'line': angle_Y},
+        'Angles_Z': {'line': angle_Z}
     }
 
-    return Angles
+    return angles
 
-def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str, label = 'data') -> None:
+def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label = 'data') -> None:
     """
     Makes a figure with three subplots (X, Y, Z) for a given sensor type.
     - data: dict or list of dicts with keys like 'Gyr_X', 'Acc_Y', etc.
@@ -149,19 +148,14 @@ def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str, la
         axs[1].plot(time, data[1][f'{prefixes[1]}_Y']['line'], color="green", linestyle='--', linewidth=2, label =label[1])
         axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label = label[1])
 
-    axs[0].set_ylabel(f'X_{ylabel}', fontsize=12)
-    axs[1].set_ylabel(f'Y_{ylabel}', fontsize=12)
-    axs[2].set_ylabel(f'Z_{ylabel}', fontsize=12)
+    axs[0].set_ylabel(f'X {ylabel}', fontsize=12)
+    axs[1].set_ylabel(f'Y {ylabel}', fontsize=12)
+    axs[2].set_ylabel(f'Z {ylabel}', fontsize=12)
     axs[2].set_xlabel(f'Time ({tlabel})', fontsize=12)
 
     for ax in axs:
         ax.grid(True, linestyle='--', alpha=0.4)
         ax.legend()
-
-    # if len(sensor_type) == 1:
-    #     fig.suptitle(f'{sensor_type[0].capitalize()} Data', fontsize=14, y=0.95)
-    # else:
-    #     fig.suptitle(f'{sensor_type[0].capitalize()} vs {sensor_type[1].capitalize()} Data', fontsize=14, y=0.95)
 
     plt.tight_layout()
     plt.show()
@@ -221,28 +215,7 @@ def visualize(data_path: str, visualizer_path: str) -> None:
         plt.close('all')
         matplotlib.use(original_backend)
 
-
-def quat_to_euler(data:dict) -> dict:
-
-    keys = ['Quat_W', 'Quat_X', 'Quat_Y', 'Quat_Z']
-
-    quats = np.column_stack([
-        data['Quat_W']['line'],
-        data['Quat_X']['line'],
-        data['Quat_Y']['line'],
-        data['Quat_Z']['line']
-    ])
-
-    r = R.from_quat(quats[:, [1, 2, 3, 0]])
-    euler = r.as_euler('zyx', degrees=True)
-
-    return {
-        'Euler_X': {'line': euler[:, 0]},
-        'Euler_Y': {'line': euler[:, 1]},
-        'Euler_Z': {'line': euler[:, 2]}
-    }
-
-def simple_madgwick_filter(csv: str, show_plot: bool) -> list:
+def simple_madgwick_filter(csv: str, gyro_column: int, accel_column: int, show_plot: bool) -> dict:
 
     """ Function implementation of the open-source
     Madgwick filter found here:
@@ -251,8 +224,9 @@ def simple_madgwick_filter(csv: str, show_plot: bool) -> list:
     data = np.genfromtxt(csv, delimiter=",", skip_header=1)
 
     timestamp = data[:, 0] / 120
-    gyroscope = data[:, 8:11]
-    accelerometer = data[:, 5:8]
+    gyroscope = data[:, gyro_column:gyro_column + 3]
+    # accelerometer = data[:, accel_column:accel_column + 3]
+    accelerometer = (data[:, accel_column:accel_column + 3])/9.81 # m/s^2 --> g unit convertion
 
     # Process sensor data
     ahrs = imufusion.Ahrs()
@@ -296,17 +270,19 @@ def simple_madgwick_filter(csv: str, show_plot: bool) -> list:
     else:
         pass
 
-    roll_hind = euler[:, 0]
-    pitch_hind = euler[:, 1]
-    yaw_hind = euler[:, 2]
+    roll = euler[:, 0]
+    pitch = euler[:, 1]
+    yaw = euler[:, 2]
 
-    # Roll = about X
-    # Pitch = about Y
-    # Yaw = about Z
+    angles_simple = {
+        'Angles_X': {'line': roll},
+        'Angles_Y': {'line': pitch},
+        'Angles_Z': {'line': yaw},
+    }
 
-    return [roll_hind, pitch_hind, yaw_hind]
+    return angles_simple
 
-def advanced_madgwick(csv:str, show_plot: bool) -> list:
+def advanced_madgwick(csv: str, gyro_column: int, accel_column: int, mag_column: int, show_plot: bool) -> dict:
 
     """ Function implementation of the open-source
     Madgwick filter found here:
@@ -319,9 +295,9 @@ def advanced_madgwick(csv:str, show_plot: bool) -> list:
     sample_rate = 120
 
     timestamp = (data[:, 0])/120 # frames --> seconds unit convertion
-    gyroscope = data[:, 8:11]
-    accelerometer = (data[:, 5:8])/9.81 # m/s^2 --> g unit convertion
-    magnetometer = (data[:, 11:14]) * 100 # G --> uT unit convertion
+    gyroscope = data[:, gyro_column:gyro_column + 3]
+    accelerometer = (data[:, accel_column:accel_column + 3])/9.81 # m/s^2 --> g unit convertion
+    magnetometer = (data[:, mag_column:mag_column + 3]) * 100 # G --> uT unit convertion
 
     # Instantiate algorithms
     offset = imufusion.Offset(sample_rate)
@@ -432,12 +408,14 @@ def advanced_madgwick(csv:str, show_plot: bool) -> list:
     else:
         pass
 
-    roll_hind = euler[:, 0]
-    pitch_hind = euler[:, 1]
-    yaw_hind = euler[:, 2]
+    roll = euler[:, 0]
+    pitch = euler[:, 1]
+    yaw = euler[:, 2]
 
-    # Roll = about X
-    # Pitch = about Y
-    # Yaw = about Z
+    angles_adv = {
+        'Angles_X': {'line': roll},
+        'Angles_Y': {'line': pitch},
+        'Angles_Z': {'line': yaw},
+    }
 
-    return [roll_hind, pitch_hind, yaw_hind]
+    return angles_adv
