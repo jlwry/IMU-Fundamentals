@@ -6,7 +6,7 @@ import numpy as np
 import imufusion
 import sys
 
-def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type='gyro'):
+def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: str) -> dict:
 
     """Filters data using median and low pass filters
     - data = dictionary containing x, y, z, sensor data
@@ -42,7 +42,7 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type='gy
 
     return filtered_data
 
-def zero_mean(data:dict):
+def zero_mean(data:dict) -> dict:
 
     """Removes bias from data
     - data = dictionary containing x, y, z, sensor data"""
@@ -54,7 +54,7 @@ def zero_mean(data:dict):
         zero_mean[ch] = {'line': zero_mean_data}
     return zero_mean
 
-def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro'):
+def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro') -> dict:
 
     """Takes the first or second integral of data
     - data = dictionary containing x, y, z, sensor data
@@ -87,7 +87,7 @@ def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro'):
 
     return integrated_data
 
-def acc_orient(data: dict):
+def acc_orient(data: dict) -> dict:
 
     """ Determines orientation of the sensor
     using only accelerometer data"""
@@ -106,7 +106,7 @@ def acc_orient(data: dict):
 
     return Angles
 
-def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro', label = 'data'):
+def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str, label = 'data') -> None:
     """
     Makes a figure with three subplots (X, Y, Z) for a given sensor type.
     - data: dict or list of dicts with keys like 'Gyr_X', 'Acc_Y', etc.
@@ -166,7 +166,7 @@ def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type='gyro', 
     plt.tight_layout()
     plt.show()
 
-def calibrate(dynamic: dict, static: dict, sensor_type='gyro'):
+def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
 
     """Calibrates the dynamic according to bias identified in static sensor data.
     - data: IMU data from a dynamic trial
@@ -194,7 +194,7 @@ def calibrate(dynamic: dict, static: dict, sensor_type='gyro'):
     return calibrated_data
 
 
-def visualize(data_path: str, visualizer_path: str):
+def visualize(data_path: str, visualizer_path: str) -> None:
     """ Uses an open source IMU data visualizer:
     https://github.com/jlwry/imu-visualization
 
@@ -222,7 +222,7 @@ def visualize(data_path: str, visualizer_path: str):
         matplotlib.use(original_backend)
 
 
-def quat_to_euler(data:dict):
+def quat_to_euler(data:dict) -> dict:
 
     keys = ['Quat_W', 'Quat_X', 'Quat_Y', 'Quat_Z']
 
@@ -242,7 +242,7 @@ def quat_to_euler(data:dict):
         'Euler_Z': {'line': euler[:, 2]}
     }
 
-def simple_madgwick_filter(csv: str, show_plot=True):
+def simple_madgwick_filter(csv: str, show_plot: bool) -> list:
 
     """ Function implementation of the open-source
     Madgwick filter found here:
@@ -304,9 +304,9 @@ def simple_madgwick_filter(csv: str, show_plot=True):
     # Pitch = about Y
     # Yaw = about Z
 
-    return roll_hind, pitch_hind, yaw_hind
+    return [roll_hind, pitch_hind, yaw_hind]
 
-def advanced_madgwick(csv:str, show_plot=True):
+def advanced_madgwick(csv:str, show_plot: bool) -> list:
 
     """ Function implementation of the open-source
     Madgwick filter found here:
@@ -440,4 +440,4 @@ def advanced_madgwick(csv:str, show_plot=True):
     # Pitch = about Y
     # Yaw = about Z
 
-    return roll_hind, pitch_hind, yaw_hind
+    return [roll_hind, pitch_hind, yaw_hind]
