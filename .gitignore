@@ -184,3 +184,4 @@ cython_debug/
 .idea/IMU-Fundamentals.iml
 .idea/misc.xml
 .idea/vcs.xml
+/.idea/inspectionProfiles/Project_Default.xml
