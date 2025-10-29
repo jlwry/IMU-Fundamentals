@@ -60,8 +60,8 @@ def zero_mean(data:dict) -> dict:
     zero_mean_data = {}
     for ch in data:
         signal = data[ch]['line']
-        zero_mean_data = signal - np.mean(signal)
-        zero_mean_data[ch] = {'line': zero_mean_data}
+        null_mean = signal - np.mean(signal)
+        zero_mean_data[ch] = {'line': null_mean}
     return zero_mean_data
 
 def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro') -> dict:
