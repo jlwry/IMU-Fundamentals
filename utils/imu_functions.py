@@ -7,11 +7,18 @@ import sys
 
 def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: str) -> dict:
 
-    """Filters data using median and low pass filters
-    - data = dictionary containing x, y, z, sensor data
-    - cutoff = lowpass cutoff frequency
-    - frequency = collection frequency
-    - sensor_type = specifies if data is from gyro or accel """
+    """
+    Filters data using median and low pass filters:
+
+    Inputs:
+    - data: dict            = n x 3 dictionary containing sensor data
+    - cutoff: int           = lowpass filter cutoff frequency
+    - sample_frequency:int  = collection frequency
+    - sensor_type: str      = specifies if data is from gyro., mag., or accel.
+
+    Outputs:
+    - filtered_data: dict   = n x 3 dictionary containing filtered sensor data
+    """
 
     sensor_channels = {
         'gyro': ['Gyr_X', 'Gyr_Y', 'Gyr_Z'],
@@ -20,7 +27,7 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: st
     }
 
     if sensor_type not in sensor_channels:
-        raise ValueError("sensor_type must be 'gyro', 'accel', or 'mag'")
+        raise ValueError("sensor_type must be 'gyro.', 'accel.', or 'mag.'")
 
     channels = sensor_channels[sensor_type]
 
@@ -43,8 +50,15 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: st
 
 def zero_mean(data:dict) -> dict:
 
-    """Removes bias from data
-    - data = dictionary containing x, y, z, sensor data"""
+    """
+    Removes bias from sensor data by subtracting the mean of the signal:
+
+    Inputs:
+    - data: dict            = n x 3 dictionary containing sensor data
+
+    Outputs:
+    - zero_mean_data: dict  = n x 3 dictionary containing zero-mean sensor data
+    """
 
     zero_mean_data = {}
     for ch in data:
@@ -55,11 +69,18 @@ def zero_mean(data:dict) -> dict:
 
 def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro') -> dict:
 
-    """Takes the first or second integral of data
-    - data = dictionary containing x, y, z, sensor data
-    - frequency = collection frequency
-    - times = specifies number of times to integrate
-    - sensor_type = specifies if data is from gyro or accel"""
+    """
+    Takes the first or second integral of a given sensor's data:
+
+    Inputs:
+    - data: dict            = n x 3 dictionary containing sensor data that you wish to integrate
+    - frequency: int        = sensor sampling frequency
+    - times: int            = specifies number of times to integrate (either 1 or 2)
+    - sensor_type: str      = specifies if data is from gyro or accel
+
+    Outputs:
+    - integrated_data: dict = n x 3 dictionary containing integrated sensor data
+    """
 
     dt = 1 / frequency
     integrated_data = {}
@@ -88,14 +109,23 @@ def integrate(data: dict, frequency: int, times: int = 1, sensor_type='gyro') ->
 
 def acc_orient(data: dict) -> dict:
 
-    """ Determines orientation of the sensor
-    using only accelerometer data"""
+    """
+    Determines orientation of the sensor using only accelerometer data:
+
+    Inputs:
+    - data: dict    = n x 3 dictionary containing sensor data
+
+    Outputs:
+    - angles: dict  = n x 3 dictionary containing sensor orientation
+
+    equations are taken from: https://www.youtube.com/watch?v=p7tjtLkIlFo
+    """
 
     g = 9.81
 
     angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
     angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
-    angle_Z = np.zeros(len(angle_X))
+    angle_Z = np.zeros(len(angle_X)) # set to zero as we are rotating about Fg
 
     angles = {
         'Angles_X': {'line': angle_X},
@@ -105,15 +135,21 @@ def acc_orient(data: dict) -> dict:
 
     return angles
 
-def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label = 'data') -> None:
+def plot_xyz(data: dict, div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label = 'data') -> None:
+
     """
-    Makes a figure with three subplots (X, Y, Z) for a given sensor type.
-    - data: dict or list of dicts with keys like 'Gyr_X', 'Acc_Y', etc.
-    - div_time: int to convert frames into time
-    - tlabel: str, label for time axis
-    - ylabel: str, label for variable plotted
-    - sensor_type: str 'gyro', 'accel', 'mag', 'angles', or 'results'
-    - label: str, label for the data lines
+    Makes a figure with three subplots (X, Y, Z) for a given signal:
+
+    Inputs:
+    - data: dict                = n x 3 dictionary containing sensor data
+    - div_time: int             = integer by which fs is divided to get desired time
+    - tlabel: str               = time units
+    - ylabel: str               = label for the plot y-axis
+    - sensor_type: str or list  = specifies the data type
+    - label: str                = label for the plot data lines
+
+    Outputs:
+    - None // creates the figure
     """
 
     sensor_map = {
@@ -162,9 +198,17 @@ def plot_xyz(data, div_time: int, tlabel: str, ylabel: str, sensor_type: str | l
 
 def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
 
-    """Calibrates the dynamic according to bias identified in static sensor data.
-    - data: IMU data from a dynamic trial
-    - static: trial where the sensor isn't moving"""
+    """
+    Calibrates dynamic data. Takes a static trial, computes bias, and removes it from the dynamic data:
+
+    Inputs:
+    - dynamic: dict             = n x 3 dictionary containing dynamic data
+    - static: dict              = n x 3 dictionary containing static data
+    - sensor_type: str          = specifies what sensor type is being processed
+
+    Outputs:
+    - calibrated_data: dict     = n x 3 dictionary containing sensor data with bias removed
+    """
 
     sensor_channels = {
         'gyro': ['Gyr_X', 'Gyr_Y', 'Gyr_Z'],
@@ -189,11 +233,15 @@ def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
 
 
 def visualize(data_path: str, visualizer_path: str) -> None:
-    """ Uses an open source IMU data visualizer:
-    https://github.com/jlwry/imu-visualization
+    """
+    Uses an open source IMU visualizer: https://github.com/jlwry/imu-visualization:
 
-    data_path = path to data you wish to visualize (or list of paths)
-    visualizer_path = path to visualization repo
+    Inputs:
+    - data_path : str           = path to data file
+    - visualizer_path : str     = path to visualizer file
+
+    Outputs:
+    - None
     """
 
     import sys
@@ -217,9 +265,18 @@ def visualize(data_path: str, visualizer_path: str) -> None:
 
 def simple_madgwick_filter(csv: str, gyro_column: int, accel_column: int, show_plot: bool) -> dict:
 
-    """ Function implementation of the open-source
-    Madgwick filter found here:
-    https://github.com/xioTechnologies/Fusion"""
+    """ Function implementation of the open-source Madgwick filter found here:
+    https://github.com/xioTechnologies/Fusion
+
+    Inputs:
+    - csv: str             = path to csv file you wish to visualize
+    - gyro_column: int     = column number (0-index) of the first column of gyro data
+    - accel_column: int    = column number (0-index) of the first column of accelerometer data
+    - show_plot: bool      = True if you wish to show the plot
+
+    Outputs:
+    - angles_simple: dict   = n x 3 dictionary containing resulting angles
+    """
 
     data = np.genfromtxt(csv, delimiter=",", skip_header=1)
 
@@ -284,11 +341,21 @@ def simple_madgwick_filter(csv: str, gyro_column: int, accel_column: int, show_p
 
 def advanced_madgwick(csv: str, gyro_column: int, accel_column: int, mag_column: int, show_plot: bool) -> dict:
 
-    """ Function implementation of the open-source
-    Madgwick filter found here:
+    """ Function implementation of the open-source Madgwick filter found here:
     https://github.com/xioTechnologies/Fusion
 
-    ** note: the advanced Madgwick filter implements mag data"""
+    Inputs:
+    - csv: str              = path to csv file you wish to visualize
+    - gyro_column: int      = column number (0-index) of the first column of gyro data
+    - accel_column: int     = column number (0-index) of the first column of accelerometer data
+    - mag_column: int       = column number (0-index) of the first column of magnetic data
+    - show_plot: bool       = True if you wish to show the plot
+
+    Outputs:
+    - angles_simple: dict   = n x 3 dictionary containing resulting angles
+
+    * Note: the advanced Madgwick filter uses mag. data
+    """
 
     data = np.genfromtxt(csv, delimiter=",", skip_header=1)
 
