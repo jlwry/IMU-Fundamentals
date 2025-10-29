@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_xyz(data: dict, div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label = 'data') -> None:
+def plot_xyz(data: dict | list[dict], div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label = 'data') -> None:
 
     """
     Makes a figure with three subplots (X, Y, Z) for a given signal:
