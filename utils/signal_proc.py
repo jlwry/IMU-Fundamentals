@@ -16,7 +16,7 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: st
     Outputs:
     - filtered_data: dict   = n x 3 dictionary containing filtered sensor data
     """
-
+    # TODO: the use of the median filter to get rid of outliers is likely over filtering the data along with the low pass
     sensor_channels = {
         'gyro': ['Gyr_X', 'Gyr_Y', 'Gyr_Z'],
         'accel': ['Acc_X', 'Acc_Y', 'Acc_Z'],
