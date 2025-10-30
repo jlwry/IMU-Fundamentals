@@ -16,7 +16,7 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: st
     Outputs:
     - filtered_data: dict   = n x 3 dictionary containing filtered sensor data
     """
-    # TODO: the use of the median filter to get rid of outliers is likely over filtering the data along with the low pass
+    # TODO: using the median + low pass is likely over filtering the data
     sensor_channels = {
         'gyro': ['Gyr_X', 'Gyr_Y', 'Gyr_Z'],
         'accel': ['Acc_X', 'Acc_Y', 'Acc_Z'],
@@ -122,7 +122,7 @@ def acc_orient(data: dict) -> dict:
 
     angle_X = np.degrees(np.arctan2(data['Acc_Y']['line'], data['Acc_Z']['line']))
     angle_Y = -np.degrees(np.arcsin(data['Acc_X']['line'] / g))
-    angle_Z = np.zeros(len(angle_X)) # set to zero as we are rotating about Fg
+    angle_Z = np.zeros(len(angle_X))
 
     angles = {
         'Angles_X': {'line': angle_X},
@@ -157,12 +157,9 @@ def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
 
     channels = sensor_channels[sensor_type]
 
-    bias = {}
-    for ch in channels:
-        bias[ch] = np.mean(static[ch]['line'])
-
     calibrated_data = {}
+
     for ch in channels:
-        calibrated_data[ch] = {'line': dynamic[ch]['line'] - bias[ch]}
+        calibrated_data[ch] = {'line': dynamic[ch]['line'] - np.mean(static[ch]['line'])}
 
     return calibrated_data

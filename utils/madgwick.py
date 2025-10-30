@@ -22,7 +22,6 @@ def simple_madg(csv: str, gyro_column: int, accel_column: int, show_plot: bool) 
 
     timestamp = data[:, 0] / 120
     gyroscope = data[:, gyro_column:gyro_column + 3]
-    # accelerometer = data[:, accel_column:accel_column + 3]
     accelerometer = (data[:, accel_column:accel_column + 3])/9.81 # m/s^2 --> g unit convertion
 
     # Process sensor data
