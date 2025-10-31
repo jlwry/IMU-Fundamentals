@@ -78,7 +78,7 @@ def simple_madg(csv: str, gyro_column: int, accel_column: int, show_plot: bool) 
 
     return angles_simple
 
-def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int, show_plot: bool) -> dict:
+def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int, show_plot: bool) -> dict | tuple:
 
     """ Function implementation of the open-source Madgwick filter found here:
     https://github.com/xioTechnologies/Fusion
@@ -177,7 +177,7 @@ def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int
 
         # Plot initialising flag
         plot_bool(axes[1], timestamp, flags[:, 0], "Initialising")
-
+        # TODO: get the initializing index returned
         # Plot angular rate recovery flag
         plot_bool(axes[2], timestamp, flags[:, 1], "Angular rate recovery")
 
@@ -224,4 +224,4 @@ def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int
         'Angles_Z': {'line': yaw},
     }
 
-    return angles_adv
+    return angles_adv, flags[:, 0]

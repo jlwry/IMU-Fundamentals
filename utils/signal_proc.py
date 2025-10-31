@@ -163,3 +163,20 @@ def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
         calibrated_data[ch] = {'line': dynamic[ch]['line'] - np.mean(static[ch]['line'])}
 
     return calibrated_data
+
+def clip(data1: dict, data2: dict, data3: dict) -> tuple[dict, dict, dict]:
+
+    min_len = float('inf')
+    for data in [data1, data2, data3]:
+        for key in data:
+            if isinstance(data[key], dict) and 'line' in data[key]:
+                min_len = min(min_len, len(data[key]['line']))
+
+    for data in [data1, data2, data3]:
+        for key in data:
+            if isinstance(data[key], dict):
+                for subkey in data[key]:
+                    if isinstance(data[key][subkey], (list, np.ndarray)):
+                        data[key][subkey] = data[key][subkey][:min_len]
+
+    return data1, data2, data3
