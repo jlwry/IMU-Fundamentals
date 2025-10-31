@@ -101,3 +101,124 @@ def visualize(data_path: str, visualizer_path: str) -> None:
     finally:
         plt.close('all')
         matplotlib.use(original_backend)
+
+def plot_heading(data: dict | list[dict], div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label='data', cal=None) -> None:
+    """
+    Makes a figure with a single subplot for a given signal:
+
+    Inputs:
+    - data: dict                = n x 3 dictionary containing sensor data
+    - div_time: int             = integer by which fs is divided to get desired time
+    - tlabel: str               = time units
+    - ylabel: str               = label for the plot y-axis
+    - sensor_type: str or list  = specifies the data type
+    - label: str                = label for the plot data lines
+    - state_array: array or list of arrays = array(s) of 1s and 0s to mark transitions
+
+    Outputs:
+    - None // creates the figure
+    """
+
+    sensor_map = {
+        'gyro': 'Gyr',
+        'accel': 'Acc',
+        'mag': 'Mag',
+        'angles': 'Angles',
+        'results': 'Euler'
+    }
+
+    if isinstance(data, dict):
+        data = [data]
+
+    if isinstance(sensor_type, str):
+        sensor_type = [sensor_type]
+
+    if isinstance(label, str):
+        label = [label]
+
+    prefixes = [sensor_map[s] for s in sensor_type]
+
+    time = np.arange(len(data[0][f'{prefixes[0]}_Z']['line'])) / div_time
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+
+    ax.plot(time, data[0][f'{prefixes[0]}_Z']['line'], color="blue", linewidth=2, label=label[0])
+
+    if len(data) == 2:
+        ax.plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label=label[1])
+
+    if len(data) == 3:
+        ax.plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label=label[1])
+        ax.plot(time, data[2][f'{prefixes[2]}_Z']['line'], color="blue", linestyle=':', linewidth=2, label=label[2])
+
+    colors = ['red', 'red', 'red']
+    if cal is not None:
+        for idx, cal_array in enumerate(cal):
+            for i in range(1, len(cal_array)):
+                if cal_array[i - 1] == 1 and cal_array[i] == 0:
+                    ax.axvline(x=time[i], color=colors[idx], linestyle='--', linewidth=2, alpha=0.9,
+                               label='Calibration Done' if idx == 0 else '')
+
+    ax.set_ylabel(f'Z {ylabel}', fontsize=12)
+    ax.set_xlabel(f'Time ({tlabel})', fontsize=12)
+    ax.grid(True, linestyle='--', alpha=0.4)
+    ax.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+# def plot_z(data: dict | list[dict], div_time: int, tlabel: str, ylabel: str, sensor_type: str | list[str], label='data') -> None:
+#     """
+#     Makes a figure with a single subplot (Z) for a given signal:
+#
+#     Inputs:
+#     - data: dict                = n x 3 dictionary containing sensor data
+#     - div_time: int             = integer by which fs is divided to get desired time
+#     - tlabel: str               = time units
+#     - ylabel: str               = label for the plot y-axis
+#     - sensor_type: str or list  = specifies the data type
+#     - label: str                = label for the plot data lines
+#
+#     Outputs:
+#     - None // creates the figure
+#     """
+#
+#     sensor_map = {
+#         'gyro': 'Gyr',
+#         'accel': 'Acc',
+#         'mag': 'Mag',
+#         'angles': 'Angles',
+#         'results': 'Euler'
+#     }
+#
+#     if isinstance(data, dict):
+#         data = [data]
+#
+#     if isinstance(sensor_type, str):
+#         sensor_type = [sensor_type]
+#
+#     if isinstance(label, str):
+#         label = [label]
+#
+#     prefixes = [sensor_map[s] for s in sensor_type]
+#
+#     time = np.arange(len(data[0][f'{prefixes[0]}_Z']['line'])) / div_time
+#
+#     fig, ax = plt.subplots(figsize=(8, 4))
+#
+#     ax.plot(time, data[0][f'{prefixes[0]}_Z']['line'], color="blue", linewidth=2, label=label[0])
+#
+#     if len(data) == 2:
+#         ax.plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label=label[1])
+#
+#     if len(data) == 3:
+#         ax.plot(time, data[1][f'{prefixes[1]}_Z']['line'], color="blue", linestyle='--', linewidth=2, label=label[1])
+#         ax.plot(time, data[2][f'{prefixes[2]}_Z']['line'], color="blue", linestyle=':', linewidth=2, label=label[2])
+#
+#     ax.set_ylabel(f'Z {ylabel}', fontsize=12)
+#     ax.set_xlabel(f'Time ({tlabel})', fontsize=12)
+#     ax.grid(True, linestyle='--', alpha=0.4)
+#     ax.legend(loc='upper right')
+#
+#     plt.tight_layout()
+#     plt.show()
