@@ -1,4 +1,5 @@
 from biomechzoo.biomech_ops.filter_line import filter_line
+from biomechzoo.conversion.csv2zoo_data import csv2zoo_data as csv
 from scipy.signal import medfilt
 import numpy as np
 
@@ -155,17 +156,19 @@ if __name__ == "__main__":
     # Single workflow
     processor = SensorProcessor('gyro', sample_frequency=100)
 
+    data1 = csv('/Users/joshualowery/Desktop/EDKP_616/IMU-Fundamentals/data/euler_rotation.csv')
     processed = (processor
-                 .load_data(raw_gyro_data)
+                 .load_data(data1)
                  .filter(cutoff=10)
                  .zero_mean()
                  .integrate(times=1)
                  .get_data())
 
     # Reuse for another dataset
+    data2 = csv('/Users/joshualowery/Desktop/EDKP_616/IMU-Fundamentals/data/mag_field.csv')
     processed2 = (processor
                   .reset()
-                  .load_data(another_gyro_dataset)
+                  .load_data(data2)
                   .filter(cutoff=10)
                   .zero_mean()
                   .get_data())
