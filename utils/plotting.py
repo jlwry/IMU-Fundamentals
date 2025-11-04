@@ -54,20 +54,6 @@ def plot_xyz(data: dict | list[dict], div_time: int, tlabel: str, ylabel: str, s
         axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'],
                     color="blue", linestyle='--', linewidth=2, label = label[1])
 
-    if len(data) == 3:
-        axs[0].plot(time, data[1][f'{prefixes[1]}_X']['line'],
-                    color="red", linestyle='--', linewidth=2, label = label[1])
-        axs[1].plot(time, data[1][f'{prefixes[1]}_Y']['line'],
-                    color="green", linestyle='--', linewidth=2, label =label[1])
-        axs[2].plot(time, data[1][f'{prefixes[1]}_Z']['line'],
-                    color="blue", linestyle='--', linewidth=2, label = label[1])
-        axs[0].plot(time, data[2][f'{prefixes[2]}_X']['line'],
-                    color="red", linestyle=':', linewidth=2, label = label[2])
-        axs[1].plot(time, data[2][f'{prefixes[2]}_Y']['line'],
-                    color="green", linestyle=':', linewidth=2, label =label[2])
-        axs[2].plot(time, data[2][f'{prefixes[2]}_Z']['line'],
-                    color="blue", linestyle=':', linewidth=2, label = label[2])
-
     axs[0].set_ylabel(f'X {ylabel}', fontsize=12)
     axs[1].set_ylabel(f'Y {ylabel}', fontsize=12)
     axs[2].set_ylabel(f'Z {ylabel}', fontsize=12)
