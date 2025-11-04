@@ -78,7 +78,7 @@ def simple_madg(csv: str, gyro_column: int, accel_column: int, show_plot: bool) 
 
     return angles_simple
 
-def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int, show_plot: bool) -> dict | tuple:
+def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int, mag_rej: int, acc_rej:int, show_plot: bool) -> dict | tuple:
 
     """ Function implementation of the open-source Madgwick filter found here:
     https://github.com/xioTechnologies/Fusion
@@ -113,8 +113,8 @@ def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int
         imufusion.CONVENTION_NWU,  # convention
         0.5,  # gain
         2000,  # gyroscope range
-        10,  # acceleration rejection
-        10,  # magnetic rejection
+        acc_rej,  # acceleration rejection -- base = 10
+        mag_rej,  # magnetic rejection -- base = 10
         5 * sample_rate,  # recovery trigger period = 5 seconds
     )
 
