@@ -100,7 +100,7 @@ def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column: int
 
     sample_rate = 120
 
-    timestamp = (data[:, 0])/120 # frames --> seconds unit convertion
+    timestamp = (data[:, 0])/sample_rate # frames --> seconds unit convertion
     gyroscope = data[:, gyro_column:gyro_column + 3]
     accelerometer = (data[:, accel_column:accel_column + 3])/9.81 # m/s^2 --> g unit convertion
     magnetometer = (data[:, mag_column:mag_column + 3]) * 100 # G --> uT unit convertion
