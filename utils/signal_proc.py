@@ -166,12 +166,14 @@ def calibrate(dynamic: dict, static: dict, sensor_type: str) -> dict:
 
 def clip(data1: dict, data2: dict, data3: dict) -> tuple[dict, dict, dict]:
 
+    # Find minimum length in the three dictionaries
     min_len = float('inf')
     for data in [data1, data2, data3]:
         for key in data:
             if isinstance(data[key], dict) and 'line' in data[key]:
                 min_len = min(min_len, len(data[key]['line']))
 
+    # Clip the dictionary lines to that minimum length
     for data in [data1, data2, data3]:
         for key in data:
             if isinstance(data[key], dict):
