@@ -78,7 +78,7 @@ def simple_madg(csv: str, gyro_column: int, accel_column: int, show_plot: bool) 
 
     return angles_simple
 
-def advanced_madg(csv: str, gyro_column: int, accel_column: int, acc_rej:int, show_plot: bool, mag_column = 10, mag_rej = 10) -> dict | tuple:
+def advanced_madg(csv: str, gyro_column: int, accel_column: int, mag_column:int, show_plot: bool, acc_rej = 10, mag_rej = 10) -> dict | tuple:
 
     """ Function implementation of the open-source Madgwick filter found here:
     https://github.com/xioTechnologies/Fusion
