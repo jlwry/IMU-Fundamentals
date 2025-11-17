@@ -102,6 +102,7 @@ dependencies:
   - pcre2=10.42=hb066dcc_1
   - pexpect=4.9.0=py311hca03da5_0
   - pillow=11.3.0=py311h6dd570d_0
+  - pip
   - pixman=0.46.4=h09dc60e_0
   - platformdirs=4.3.7=py311hca03da5_0
   - prometheus_client=0.21.1=py311hca03da5_0
