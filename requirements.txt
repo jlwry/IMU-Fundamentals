@@ -1,0 +1,15 @@
+biomechzoo==0.5.10
+bottleneck==1.4.2
+brotli==1.0.9
+brotlicffi==1.0.9.2
+imufusion==1.2.8
+ipympl==0.9.8
+notebook==7.4.5
+numexpr==2.11.0
+pandas-stubs==2.2.3.250308
+pip-chill==1.0.3
+pysocks==1.7.1
+scipy-stubs==1.16.2.0
+seaborn==0.13.2
+tinycss2==1.4.0
+unicodedata2==15.1.0
