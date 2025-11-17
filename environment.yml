@@ -184,4 +184,4 @@ dependencies:
       - setuptools==44.1.1
       - simplejson==3.20.2
       - widgetsnbextension==4.0.14
-prefix: /opt/anaconda3/envs/Motion_Lab_311
+prefix: /opt/anaconda3/envs/IMU_Fundamentals
