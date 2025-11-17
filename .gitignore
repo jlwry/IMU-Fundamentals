@@ -185,15 +185,4 @@ cython_debug/
 .idea/misc.xml
 .idea/vcs.xml
 /.idea/inspectionProfiles/Project_Default.xml
-/zoo_data/LSh_20250816_112514.zoo
-/zoo_data/still_1min.zoo
-/zoo_data/east.zoo
-/zoo_data/euler_rotation.zoo
-/zoo_data/LH_20250816_112514.zoo
-/zoo_data/LH_quat_rotation.zoo
-/zoo_data/mag_field.zoo
-/zoo_data/north.zoo
-/zoo_data/overnight.zoo
-/zoo_data/west.zoo
-/zoo_data/xyz_rot_1min.zoo
 /zoo_data/
