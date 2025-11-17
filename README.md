@@ -22,6 +22,21 @@ IMU-Fundamentals/
 └── utils/                     # Utility functions
 ```
 
+## Additional Setup
+
+This notebook uses an external IMU visualization tool. Before running the visualization cells, you need to clone the [imu-visualization](https://github.com/jlwry/imu-visualization) repository:
+```bash
+git clone https://github.com/jlwry/imu-visualization
+```
+
+Once cloned, update the `visualizer_path` variable in the visualization cell to point to the location where you cloned the repository. For example:
+```python
+visualizer_path = '/path/to/your/imu-visualization'
+visualize(data_path, visualizer_path)
+```
+
+Make sure the path points to the directory containing the `vis_3D_rot_scikit_V4.py` file.
+
 ## Requirements
 - Python 3.11+
 - Conda (for environment management)
