@@ -1,5 +1,4 @@
-from biomechzoo.biomech_ops.filter_line import filter_line
-from scipy.signal import medfilt
+from scipy.signal import medfilt, butter, filtfilt
 import numpy as np
 
 def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: str) -> dict:
@@ -24,26 +23,24 @@ def filter_data(data : dict, cutoff: int, sample_frequency: int, sensor_type: st
     }
 
     if sensor_type not in sensor_channels:
-        raise ValueError("sensor_type must be 'gyro.', 'accel.', or 'mag.'")
+        raise ValueError("sensor_type must be 'gyro', 'accel', or 'mag'")
 
     channels = sensor_channels[sensor_type]
 
-    filter_params = {
-        'type': 'butter',
-        'order': 4,
-        'cutoff': cutoff,
-        'btype': 'low',
-        'fs': sample_frequency
-    }
+    # Design a low-pass Butterworth filter
+    b, a = butter(N=4, Wn=cutoff/(sample_frequency/2), btype='low')
 
     filtered_data = {}
 
     for ch in channels:
+        # Median filter first
         med_filt = medfilt(data[ch]['line'], kernel_size=5)
-        filt = filter_line(med_filt, filter_params)
+        # Apply Butterworth filter
+        filt = filtfilt(b, a, med_filt)
         filtered_data[ch] = {'line': filt}
 
     return filtered_data
+
 
 def zero_mean(data:dict) -> dict:
 

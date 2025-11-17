@@ -186,3 +186,4 @@ cython_debug/
 .idea/vcs.xml
 /.idea/inspectionProfiles/Project_Default.xml
 /zoo_data/
+/table2zoo_data/
